@@ -1,47 +1,34 @@
-const createGuest = () => {
-  const getName = () => "Guest";
-  const renderButtons = () => console.log("[BUTTON] View Only");
-  const track = () => {};
+const createGuest = () => ({
+  getName: () => "Guest",
+  isAdmin: () => false,
+  shouldTrack: () => false,
+  getId: () => null,
+});
 
-  return { getName, renderButtons, track };
-};
-
-const createUser = (user) => {
-  const getName = () => user.name;
-  const renderButtons = () =>
-    user.role === "admin"
-      ? console.log(" [BUTTON] Delete Database")
-      : console.log("[BUTTON] View Only");
-  const track = () => console.log(`Tracking visit for ID: ${user.id}`);
-
-  return { getName, renderButtons, track };
-};
-
-const getUser = (rawUser) => {
-  if (!rawUser) {
-    return createGuest();
-  } else {
-    return createUser(rawUser);
-  }
-};
+const createUser = (user) => ({
+  getName: () => user.name,
+  isAdmin: () => user.role === "admin",
+  shouldTrack: () => true,
+  getId: () => user.id,
+});
 
 const renderDashboard = (rawUser) => {
-  const user = getUser(rawUser);
+  const user = rawUser ? createUser(rawUser) : createGuest();
 
   console.log(`Hello, ${user.getName()}`);
-  user.renderButtons();
-  user.track();
+  console.log(
+    user.isAdmin() ? "[BUTTON] Delete Database" : "[BUTTON] View Only",
+  );
+
+  if (user.shouldTrack()) {
+    console.log(`Tracking visit for ID: ${user.getId()}`);
+  }
 };
 
 const admin = { id: 101, name: "Alice", role: "admin" };
 const regular = { id: 102, name: "Bob", role: "user" };
 const guest = null;
 
-console.log("--- Admin ---");
 renderDashboard(admin);
-
-console.log("\n--- Regular ---");
 renderDashboard(regular);
-
-console.log("\n--- Guest ---");
 renderDashboard(guest);
